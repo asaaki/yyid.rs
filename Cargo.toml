@@ -1,0 +1,15 @@
+[package]
+name = "yyid"
+version = "0.1.0"
+authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/asaaki/yyid"
+homepage = "https://github.com/asaaki/yyid"
+documentation = "https://github.com/asaaki/yyid"
+description = """
+YYID generator (random tokens like UUIDv4)
+"""
+
+[dependencies]
+rand = "0.3"
