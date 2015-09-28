@@ -56,7 +56,7 @@ struct YYIDSections {
 }
 
 impl YYID {
-    // Creates a new random YYID
+    /// Creates a new random YYID
     pub fn new() -> YYID {
         let ybytes = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut yyid = YYID{ bytes: [0; 16] };
@@ -64,12 +64,12 @@ impl YYID {
         yyid
     }
 
-    // Return an array of 16 octets containing the YYID data
+    /// Return an array of 16 octets containing the YYID data
     pub fn as_bytes<'a>(&'a self) -> &'a [u8] { &self.bytes }
 
-    // Returns the YYID as a string of 32 hexadecimal digits
-    //
-    // Example: `2ff0b694960e88a4693a66cff98fc56c`
+    /// Returns the YYID as a string of 32 hexadecimal digits
+    ///
+    /// Example: `2ff0b694960e88a4693a66cff98fc56c`
     pub fn to_simple_string(&self) -> String {
         let mut ystr = repeat(0u8).take(32).collect::<Vec<_>>();
         for i in 0..16 {
@@ -80,9 +80,9 @@ impl YYID {
         String::from_utf8(ystr).unwrap()
     }
 
-    // Returns a string of hexadecimal digits, separated into groups with a hyphen.
-    //
-    // Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
+    /// Returns a string of hexadecimal digits, separated into groups with a hyphen.
+    ///
+    /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
     pub fn to_hyphenated_string(&self) -> String {
         let mut ys: YYIDSections;
         unsafe {
