@@ -10,6 +10,7 @@ documentation = "https://github.com/asaaki/yyid"
 description = """
 YYID generator (random tokens like UUIDv4)
 """
+keywords = ["yyid", "uuid", "random", "token"]
 
 [dependencies]
 rand = "0.3"
