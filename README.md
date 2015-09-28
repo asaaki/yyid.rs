@@ -1,4 +1,4 @@
-# YYID generator in Rust
+# YYID generator in Rust [![yyid on crates.io](https://img.shields.io/crates/v/yyid.svg)](https://crates.io/crates/yyid)
 
 Generates random tokens that look like [type 4 UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29): `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
 
