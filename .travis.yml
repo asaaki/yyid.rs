@@ -1,3 +1,5 @@
+sudo: false
+
 language: rust
 
 rust:
@@ -14,7 +16,8 @@ after_success: |
   [ $TRAVIS_PULL_REQUEST = false ] &&
   cargo doc &&
   echo "<meta http-equiv=refresh content=0;url=yyid/index.html>" > target/doc/index.html &&
-  sudo pip install ghp-import &&
+  pip install --user ghp-import &&
+  export PATH=$PATH:$HOME/.local/bin &&
   ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 
