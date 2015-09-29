@@ -27,12 +27,12 @@
 
 #![cfg_attr(test, deny(warnings))]
 
+extern crate libc;
 extern crate rand;
 
 use std::fmt;
 use std::hash;
-use std::iter::repeat;
-use std::mem::transmute_copy;
+use std::ffi::CString;
 use rand::Rng;
 
 pub type YYIDBytes = [u8; 16];
@@ -42,66 +42,66 @@ pub struct YYID {
     bytes: YYIDBytes
 }
 
-impl hash::Hash for YYID {
-    fn hash<S: hash::Hasher>(&self, state: &mut S) {
-        self.bytes.hash(state)
-    }
+/// Creates a new random YYID as String
+///
+/// See: [YYID's to_string](../yyid/struct.YYID.html#method.to_string)
+pub fn yyid_string() -> String {
+    YYID::new().to_string()
 }
 
-#[derive(Copy, Clone)]
-struct YYIDSections {
-    section1:  u32,
-    section2:  u16,
-    section3:  u16,
-    section4:  u16,
-    section5a: u16,
-    section5b: u32,
+/// Creates a new random YYID as a C-compatible char*
+#[no_mangle]
+pub extern "C" fn yyid_c_string() -> *const i8 {
+    let yyid   = yyid_string();
+    let c_yyid = CString::new(yyid).unwrap();
+    c_yyid.as_ptr()
 }
 
 impl YYID {
     /// Creates a new random YYID
     pub fn new() -> YYID {
-        let ybytes = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut yyid = YYID{ bytes: [0; 16] };
-        copy_memory(&mut yyid.bytes, &ybytes);
-        yyid
+        let mut ybytes = [0u8; 16];
+        rand::thread_rng().fill_bytes(&mut ybytes);
+        YYID{ bytes: ybytes }
     }
 
     /// Return an array of 16 octets containing the YYID data
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] { &self.bytes }
-
-    /// Returns the YYID as a string of 32 hexadecimal digits
-    ///
-    /// Example: `2ff0b694960e88a4693a66cff98fc56c`
-    pub fn to_simple_string(&self) -> String {
-        let mut ystr = repeat(0u8).take(32).collect::<Vec<_>>();
-        for i in 0..16 {
-            let digit = format!("{:02x}", self.bytes[i] as usize);
-            ystr[i*2+0] = digit.as_bytes()[0];
-            ystr[i*2+1] = digit.as_bytes()[1];
-        }
-        String::from_utf8(ystr).unwrap()
+    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+        &self.bytes
     }
 
     /// Returns a string of hexadecimal digits, separated into groups with a hyphen.
     ///
     /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
-    pub fn to_hyphenated_string(&self) -> String {
-        let mut ys: YYIDSections;
-        unsafe {
-            ys = transmute_copy(&self.bytes);
-        }
-        ys.section1  = ys.section1.to_be();
-        ys.section2  = ys.section2.to_be();
-        ys.section3  = ys.section3.to_be();
-        ys.section4  = ys.section4.to_be();
-        ys.section5a = ys.section5a.to_be();
-        ys.section5b = ys.section5b.to_be();
-        let ystr = format!("{:08x}-{:04x}-{:04x}-{:04x}-{:04x}{:08x}",
-            ys.section1,
-            ys.section2, ys.section3, ys.section4,
-            ys.section5a, ys.section5b);
-        ystr
+    pub fn to_string(&self) -> String {
+        let b = &self.bytes;
+        format!("{:02x}{:02x}{:02x}{:02x}-\
+                 {:02x}{:02x}-\
+                 {:02x}{:02x}-\
+                 {:02x}{:02x}-\
+                 {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                 b[0], b[1], b[2], b[3],
+                 b[4], b[5],
+                 b[6], b[7],
+                 b[8], b[9],
+                 b[10], b[11], b[12], b[13], b[14], b[15])
+    }
+
+    /// Returns the YYID as a string of 32 hexadecimal digits
+    ///
+    /// Example: `2ff0b694960e88a4693a66cff98fc56c`
+    pub fn to_simple_string(&self) -> String {
+        let b = &self.bytes;
+        format!("{:02x}{:02x}{:02x}{:02x}\
+                 {:02x}{:02x}\
+                 {:02x}{:02x}\
+                 {:02x}{:02x}\
+                 {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                 b[0], b[1], b[2], b[3],
+                 b[4], b[5],
+                 b[6], b[7],
+                 b[8], b[9],
+                 b[10], b[11], b[12], b[13], b[14], b[15])
     }
 
     /// Returns the YYID formatted as a full URN string
@@ -110,27 +110,21 @@ impl YYID {
     ///
     /// Example: `urn:yyid:05f7d6d3-1727-ce2d-6cf2-3b73ad48ff73`
     pub fn to_urn_string(&self) -> String {
-        format!("urn:yyid:{}", self.to_hyphenated_string())
-    }
-}
-
-fn copy_memory(dst: &mut [u8], src: &[u8]) {
-    for (slot, val) in dst.iter_mut().zip(src.iter()) {
-        *slot = *val;
+        format!("urn:yyid:{}", self.to_string())
     }
 }
 
 /// Convert the YYID to a hexadecimal-based string representation wrapped in `YYID()`
 impl fmt::Debug for YYID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "YYID(\"{}\")", self.to_hyphenated_string())
+        write!(f, "YYID(\"{}\")", self.to_string())
     }
 }
 
 /// Convert the YYID to a hexadecimal-based string representation
 impl fmt::Display for YYID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_hyphenated_string())
+        write!(f, "{}", self.to_string())
     }
 }
 
@@ -149,16 +143,25 @@ impl Eq for YYID {}
 impl rand::Rand for YYID {
     #[inline]
     fn rand<R: rand::Rng>(rng: &mut R) -> YYID {
-        let ybytes = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut yyid = YYID{ bytes: [0; 16] };
-        copy_memory(&mut yyid.bytes, &ybytes);
-        yyid
+        let mut ybytes = [0u8; 16];
+        rng.fill_bytes(&mut ybytes);
+        YYID{ bytes: ybytes }
+    }
+}
+
+impl hash::Hash for YYID {
+    fn hash<S: hash::Hasher>(&self, state: &mut S) {
+        self.bytes.hash(state)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::YYID;
+    use super::yyid_string;
+    use super::yyid_c_string;
+    use std::ffi::CStr;
+    use std::str;
     use rand;
 
     #[test]
@@ -167,15 +170,6 @@ mod tests {
         let ystr = yyid.to_simple_string();
 
         assert!(ystr.len() == 32);
-    }
-
-    #[test]
-    fn test_to_simple_string() {
-        let yyid = YYID::new();
-        let ystr = yyid.to_simple_string();
-
-        assert!(ystr.len() == 32);
-        assert!(ystr.chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -188,12 +182,31 @@ mod tests {
     }
 
     #[test]
-    fn test_to_hyphenated_string() {
-        let yyid = YYID::new();
-        let ystr = yyid.to_hyphenated_string();
+    fn test_exported_yyid_c_string() {
+        let yyid_chars = yyid_c_string(); // *const i8|c_char (pointer)
+        let c_yyid     = unsafe { CStr::from_ptr(yyid_chars) }; // &CStr
+        let yyid       = str::from_utf8(c_yyid.to_bytes()).unwrap();
+        //               -(to_bytes)-> &[u8] -(str::from_utf8)-> Result<&str, Utf8Error> -(unwrap)-> &str
+
+        assert!(yyid.len() == 36);
+        assert!(yyid.chars().all(|c| c.is_digit(16) || c == '-'));
+    }
+
+    #[test]
+    fn test_yyid_string() {
+        let ystr = yyid_string();
 
         assert!(ystr.len() == 36);
         assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
+    }
+
+    #[test]
+    fn test_to_simple_string() {
+        let yyid = YYID::new();
+        let ystr = yyid.to_simple_string();
+
+        assert!(ystr.len() == 32);
+        assert!(ystr.chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -211,7 +224,7 @@ mod tests {
     fn test_to_simple_string_matching() {
         let yyid = YYID::new();
 
-        let yhyphen = yyid.to_hyphenated_string();
+        let yhyphen = yyid.to_string();
         let ysimple = yyid.to_simple_string();
 
         let ysimplified = yhyphen.chars().filter(|&c| c != '-').collect::<String>();
@@ -266,7 +279,7 @@ mod tests {
     }
 
     #[test]
-    fn test_iterbytes_impl_for_uuid() {
+    fn test_iterbytes_impl_for_yyid() {
         use std::collections::HashSet;
         let mut set = HashSet::new();
         let yyid1 = YYID::new();

@@ -1,6 +1,6 @@
 [package]
 name = "yyid"
-version = "0.1.3"
+version = "0.2.0"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
 license = "MIT"
 readme = "README.md"
@@ -12,5 +12,9 @@ YYID generator (random tokens like UUIDv4)
 """
 keywords = ["yyid", "uuid", "random", "token"]
 
+[lib]
+crate-type = ["rlib", "staticlib"]
+
 [dependencies]
+libc = "0.1"
 rand = "0.3"
