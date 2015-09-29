@@ -20,7 +20,7 @@
 // NOTE: Most of this code is currently based on uuid crate
 //       (<https://github.com/rust-lang-nursery/uuid>).
 
-// TODO: #![doc(html_root_url = "https://<some-url-to>/yyid")]
+#![doc(html_root_url = "http://asaaki.github.io/yyid.rs/yyid/index.html")]
 
 #![cfg_attr(test, deny(warnings))]
 
