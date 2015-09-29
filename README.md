@@ -8,6 +8,8 @@ Source of randomness: [rand](https://doc.rust-lang.org/rand/rand/index.html)
 
 ## Example
 
+Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
+
 ```rust
 extern crate yyid;
 
@@ -19,6 +21,12 @@ fn main() {
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
 ```
+
+## Documentation
+
+Can be found at <http://asaaki.github.io/yyid.rs/yyid/index.html>.
+
+## Furthermore
 
 The current implementation is derived from the [uuid](http://doc.rust-lang.org/uuid/uuid/index.html) crate.
 

@@ -4,9 +4,9 @@ version = "0.1.3"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/asaaki/yyid.rs"
 homepage = "https://github.com/asaaki/yyid.rs"
 documentation = "http://asaaki.github.io/yyid.rs/yyid/index.html"
+repository = "https://github.com/asaaki/yyid.rs"
 description = """
 YYID generator (random tokens like UUIDv4)
 """
