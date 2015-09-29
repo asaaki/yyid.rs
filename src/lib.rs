@@ -1,5 +1,8 @@
 //! Generate YYIDs
 //!
+//! - GitHub: <https://github.com/asaaki/yyid.rs>
+//! - crates.io: <https://crates.io/crates/yyid>
+//!
 //! Based on following micro libraries:
 //!
 //! - Ruby: <https://github.com/janlelis/yyid.rb>
