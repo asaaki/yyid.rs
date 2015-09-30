@@ -3,7 +3,19 @@
 //! - GitHub: <https://github.com/asaaki/yyid.rs>
 //! - crates.io: <https://crates.io/crates/yyid>
 //!
-//! Based on following micro libraries:
+//! ### Example
+//! ```rust
+//! extern crate yyid;
+//!
+//! use yyid::yyid_string;
+//!
+//! fn main() {
+//!     println!("{}", yyid_string());
+//!     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
+//! }
+//! ```
+//!
+//! ### Other libraries for YYID
 //!
 //! - Ruby: <https://github.com/janlelis/yyid.rb>
 //!
@@ -17,8 +29,6 @@
 //! - JavaScript: <https://github.com/janlelis/yyid.js>
 //! - Elixir: <https://github.com/janlelis/yyid.ex>
 //! - Go: <https://github.com/janlelis/yyid.go>
-//!
-//! TODO: Reduce/simplify code to meet the API of the other libraries (a hyphenated string only)
 
 // NOTE: Most of this code is currently based on uuid crate
 //       (<https://github.com/rust-lang-nursery/uuid>).
@@ -44,7 +54,17 @@ pub struct YYID {
 
 /// Creates a new random YYID as String
 ///
-/// See: [YYID's to_string](../yyid/struct.YYID.html#method.to_string)
+/// ### Example
+/// ```rust
+/// extern crate yyid;
+///
+/// use yyid::yyid_string;
+///
+/// fn main() {
+///     println!("{}", yyid_string());
+///     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
+/// }
+/// ```
 pub fn yyid_string() -> String {
     YYID::new().to_string()
 }
