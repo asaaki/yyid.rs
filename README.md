@@ -13,11 +13,10 @@ Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
 ```rust
 extern crate yyid;
 
-use yyid::YYID;
+use yyid::yyid_string;
 
 fn main() {
-    let yyid = YYID::new();
-    println!("{}", yyid.to_hyphenated_string());
+    println!("{}", yyid_string());
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
 ```
