@@ -8,6 +8,8 @@ Source of randomness: [rand](https://doc.rust-lang.org/rand/rand/index.html)
 
 ## Example
 
+### Rust
+
 Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
 
 ```rust
@@ -19,6 +21,13 @@ fn main() {
     println!("{}", yyid_string());
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
+```
+
+### C
+
+```c
+#include "path/to/yyid.rs/include/libyyid.h"
+const char* my_yyid = yyid_c_string();
 ```
 
 ## Documentation

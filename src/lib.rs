@@ -4,6 +4,9 @@
 //! - crates.io: <https://crates.io/crates/yyid>
 //!
 //! ### Example
+//!
+//! #### Rust
+//!
 //! ```rust
 //! extern crate yyid;
 //!
@@ -13,6 +16,13 @@
 //!     println!("{}", yyid_string());
 //!     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 //! }
+//! ```
+//!
+//! #### C
+//!
+//! ```c
+//! #include "path/to/yyid.rs/include/libyyid.h"
+//! const char* my_yyid = yyid_c_string();
 //! ```
 //!
 //! ### Other libraries for YYID
@@ -43,6 +53,7 @@ extern crate rand;
 use std::fmt;
 use std::hash;
 use std::ffi::CString;
+use libc::c_char;
 use rand::Rng;
 
 pub type YYIDBytes = [u8; 16];
@@ -71,7 +82,7 @@ pub fn yyid_string() -> String {
 
 /// Creates a new random YYID as a C-compatible char*
 #[no_mangle]
-pub extern "C" fn yyid_c_string() -> *const i8 {
+pub extern "C" fn yyid_c_string() -> *const c_char {
     let yyid   = yyid_string();
     let c_yyid = CString::new(yyid).unwrap();
     c_yyid.as_ptr()
@@ -203,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_exported_yyid_c_string() {
-        let yyid_chars = yyid_c_string(); // *const i8|c_char (pointer)
+        let yyid_chars = yyid_c_string(); // *const c_char (pointer)
         let c_yyid     = unsafe { CStr::from_ptr(yyid_chars) }; // &CStr
         let yyid       = str::from_utf8(c_yyid.to_bytes()).unwrap();
         //               -(to_bytes)-> &[u8] -(str::from_utf8)-> Result<&str, Utf8Error> -(unwrap)-> &str
