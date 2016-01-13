@@ -2,7 +2,7 @@
 name = "yyid"
 version = "0.2.2"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
-license = "MIT"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 homepage = "https://github.com/asaaki/yyid.rs"
 documentation = "http://asaaki.github.io/yyid.rs/yyid/index.html"
