@@ -1,6 +1,6 @@
 [package]
 name = "yyid"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
