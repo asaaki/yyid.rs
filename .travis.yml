@@ -1,16 +1,12 @@
 sudo: false
-
 language: rust
-
 rust:
-  - stable
-  - beta
-  - nightly
-
+- stable
+- beta
+- nightly
 matrix:
   allow_failures:
-    - rust: nightly
-
+  - rust: nightly
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
@@ -20,7 +16,6 @@ after_success: |
   export PATH=$PATH:$HOME/.local/bin &&
   ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
-
 env:
   global:
-    secure: MD6IxtXcYzXD36W1/x1MPaXe0Jh2bUFPoo4cuN0+BUBConOzre/6jCCxnl3fx8bgOpAc1ZZjsMnGnN5aIdZSly2gsMh0oxk1PeddqI4T4iuTSPznBm5ysP16Dj00GkacL40dLPcR6SLNFsgaDmZWJMMlIWSM0NRQ40mBJf89tb4bBnY+Z8nItI2CZfDDbiDwTubcdh7ZyRxrqALk1sW1MOCBH7pA8IVztiofpXF89gs3w7wqVU5gTTbjfh6AcndYeck9fvPQSlwLcWCMjlFNlYWfdHqEmoBAzFoX13h8ACsnDydCaZ4T3qNcIJheatVDelsZrdYtFg4h9Cv/W/rZUBPbKO9joDD/IV4sc7Z/k2l2tOXA8QMC0434bQWsouDqRrHmXA7gq8XJUiESjyw2rv6tAf6hvtESuY5w2JHvWnmyA72h0qutww1kSWSSCPHwOBRGC6/iYi6tx1UrM1dO+ub3sOXRYHYAmPbROz2c3cWf2c/3rVNmNQI7e2mHzrIV/sBm1gbeN8HoZm33Ck0c6hEFvfkKITMNmKpyxs+LfcB2upxpShtul6FI9P3SsEjd5pG05ycHR8PFozA5UsX/Uskf1qQ8aKIMhWkrmzyAlyeO7+QALycK/Y/Xdt1UZstCJenDExpmZFRaw/6Z56DPX8AUsSofiFxMwslkHQMUXq0=
+    secure: gyA8zom7bXPQ1owUZPNHjBHN2rvMANshvBQCh3WKQY9h1kPpf4DEglN+nahJRPFmtTVlZFztuOBV6RI6RFa7PvD5EWqXE3S/6EWb8FgkFk5ER01hj9/lR9TjWB942WtyNmdrnCUNRG9JSfjaciPt+4aVHcVPrWx4JIV7flp9LDUSy02JFylZv+zHv5zgyuqjW4Zsp2BoByIlTYgwlgL7CXDwxOFUq68BMifnN1Ecf1UgxPBYVn8ukqDkfoznw1QtFsj9zoyb3o19XtVZgTmgjFZrE0U17xA3lSIdK8FlVg5NLkdKjgizWuN34II9S8q8KGVDu+koZXy5EhKWAzyNFPhTVWeZunQQPrB4ABZaPllW5YxCveDFAcP/CG+v0+Ai/VgqUmhlrM0uIpNEIPGaQ4KFJsyLMsiF+UT8JprIbjR3bvyj9w9VLUhTpbo/+9kPjRTB7NRA7ZvkZPDWFtMto305L9wwUAGX+qynSiVC1OZc9o5jBgQOWsJZ6uO0U86O5doQNbK6FtOjnQcGFAVFgqjiVCiqYO0ioI6hPUwXR9RAm1kR4+9nIvdwhZ6yGuSQQH+bcOG2fgj7G5yaLWpBvMcipiSQm3U8elQJ3vKrYd31Q410KiTFedD+M56320oGW8POd8IAxjkWRccdHf0z5U6fTQeLC8RCCd+L2PgsEL4=
