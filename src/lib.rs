@@ -86,7 +86,7 @@ pub fn yyid_string() -> String {
 pub extern "C" fn yyid_c_string() -> *const c_char {
     let yyid = yyid_string();
     let c_yyid = CString::new(yyid).unwrap();
-    c_yyid.as_ptr()
+    c_yyid.into_raw()
 }
 
 impl YYID {
