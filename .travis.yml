@@ -1,12 +1,20 @@
 sudo: false
 language: rust
 rust:
-- stable
-- beta
-- nightly
+  - stable
+  - beta
+  - nightly
+cache: cargo
 matrix:
   allow_failures:
-  - rust: nightly
+    - rust: nightly
+before_script: |
+  cargo install rustfmt || true
+script: |
+  export PATH=$PATH:~/.cargo/bin &&
+  cargo fmt -- **/*.rs --write-mode=diff &&
+  cargo build &&
+  cargo test
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
