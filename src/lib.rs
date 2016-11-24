@@ -32,7 +32,8 @@
 //!   ```ruby
 //!   # Code here, since it is only a require and a one-liner:
 //!   require "securerandom"
-//!   "%08x-%04x-%04x-%04x-%04x%08x" % SecureRandom.random_bytes(16).unpack("NnnnnN")
+//!   "%08x-%04x-%04x-%04x-%04x%08x" %
+//!     SecureRandom.random_bytes(16).unpack("NnnnnN")
 //!   #=> "37ab3494-7e04-ecf1-b99f-259999a44d16"
 //!   ```
 //!
@@ -60,7 +61,7 @@ pub type YYIDBytes = [u8; 16];
 
 #[derive(Copy, Clone)]
 pub struct YYID {
-    bytes: YYIDBytes
+    bytes: YYIDBytes,
 }
 
 /// Creates a new random YYID as String
@@ -83,9 +84,9 @@ pub fn yyid_string() -> String {
 /// Creates a new random YYID as a C-compatible char*
 #[no_mangle]
 pub extern "C" fn yyid_c_string() -> *const c_char {
-    let yyid   = yyid_string();
+    let yyid = yyid_string();
     let c_yyid = CString::new(yyid).unwrap();
-    c_yyid.as_ptr()
+    c_yyid.into_raw()
 }
 
 impl YYID {
@@ -93,7 +94,7 @@ impl YYID {
     pub fn new() -> YYID {
         let mut ybytes = [0u8; 16];
         rand::thread_rng().fill_bytes(&mut ybytes);
-        YYID{ bytes: ybytes }
+        YYID { bytes: ybytes }
     }
 
     /// Return an array of 16 octets containing the YYID data
@@ -101,7 +102,8 @@ impl YYID {
         &self.bytes
     }
 
-    /// Returns a string of hexadecimal digits, separated into groups with a hyphen.
+    /// Returns a string of hexadecimal digits, separated into groups with a
+    /// hyphen.
     ///
     /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
     pub fn to_string(&self) -> String {
@@ -111,11 +113,22 @@ impl YYID {
                  {:02x}{:02x}-\
                  {:02x}{:02x}-\
                  {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                 b[0], b[1], b[2], b[3],
-                 b[4], b[5],
-                 b[6], b[7],
-                 b[8], b[9],
-                 b[10], b[11], b[12], b[13], b[14], b[15])
+                b[0],
+                b[1],
+                b[2],
+                b[3],
+                b[4],
+                b[5],
+                b[6],
+                b[7],
+                b[8],
+                b[9],
+                b[10],
+                b[11],
+                b[12],
+                b[13],
+                b[14],
+                b[15])
     }
 
     /// Returns the YYID as a string of 32 hexadecimal digits
@@ -128,16 +141,28 @@ impl YYID {
                  {:02x}{:02x}\
                  {:02x}{:02x}\
                  {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                 b[0], b[1], b[2], b[3],
-                 b[4], b[5],
-                 b[6], b[7],
-                 b[8], b[9],
-                 b[10], b[11], b[12], b[13], b[14], b[15])
+                b[0],
+                b[1],
+                b[2],
+                b[3],
+                b[4],
+                b[5],
+                b[6],
+                b[7],
+                b[8],
+                b[9],
+                b[10],
+                b[11],
+                b[12],
+                b[13],
+                b[14],
+                b[15])
     }
 
     /// Returns the YYID formatted as a full URN string
     ///
-    /// This is the same as the hyphenated format, but with the "urn:yyid:" prefix.
+    /// This is the same as the hyphenated format, but with the "urn:yyid:"
+    /// prefix.
     ///
     /// Example: `urn:yyid:05f7d6d3-1727-ce2d-6cf2-3b73ad48ff73`
     pub fn to_urn_string(&self) -> String {
@@ -145,7 +170,8 @@ impl YYID {
     }
 }
 
-/// Convert the YYID to a hexadecimal-based string representation wrapped in `YYID()`
+/// Convert the YYID to a hexadecimal-based string representation wrapped in
+/// `YYID()`
 impl fmt::Debug for YYID {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "YYID(\"{}\")", self.to_string())
@@ -176,7 +202,7 @@ impl rand::Rand for YYID {
     fn rand<R: rand::Rng>(rng: &mut R) -> YYID {
         let mut ybytes = [0u8; 16];
         rng.fill_bytes(&mut ybytes);
-        YYID{ bytes: ybytes }
+        YYID { bytes: ybytes }
     }
 }
 
@@ -214,10 +240,9 @@ mod tests {
 
     #[test]
     fn test_exported_yyid_c_string() {
-        let yyid_chars = yyid_c_string(); // *const c_char (pointer)
-        let c_yyid     = unsafe { CStr::from_ptr(yyid_chars) }; // &CStr
-        let yyid       = str::from_utf8(c_yyid.to_bytes()).unwrap();
-        //               -(to_bytes)-> &[u8] -(str::from_utf8)-> Result<&str, Utf8Error> -(unwrap)-> &str
+        let yyid_cptr = yyid_c_string();
+        let yyid_cstr = unsafe { CStr::from_ptr(yyid_cptr) };
+        let yyid = str::from_utf8(yyid_cstr.to_bytes()).unwrap();
 
         assert!(yyid.len() == 36);
         assert!(yyid.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -258,7 +283,9 @@ mod tests {
         let yhyphen = yyid.to_string();
         let ysimple = yyid.to_simple_string();
 
-        let ysimplified = yhyphen.chars().filter(|&c| c != '-').collect::<String>();
+        let ysimplified = yhyphen.chars()
+            .filter(|&c| c != '-')
+            .collect::<String>();
 
         assert!(ysimplified == ysimple);
     }
@@ -280,7 +307,7 @@ mod tests {
         let ybytes = yyid.as_bytes();
 
         assert!(ybytes.len() == 16);
-        assert!(! ybytes.iter().all(|&b| b == 0));
+        assert!(!ybytes.iter().all(|&b| b == 0));
     }
 
     #[test]
@@ -306,7 +333,7 @@ mod tests {
         let ybytes = yyid.as_bytes();
 
         assert!(ybytes.len() == 16);
-        assert!(! ybytes.iter().all(|&b| b == 0));
+        assert!(!ybytes.iter().all(|&b| b == 0));
     }
 
     #[test]
