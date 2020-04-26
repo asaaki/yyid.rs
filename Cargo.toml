@@ -1,7 +1,8 @@
 [package]
 name = "yyid"
-version = "0.2.4"
+version = "0.3.0-dev"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
+edition = "2018"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 homepage = "https://github.com/asaaki/yyid.rs"
@@ -17,4 +18,4 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 libc = "0.2"
-rand = "0.3"
+getrandom = "0.1"

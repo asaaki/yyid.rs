@@ -1,4 +1,7 @@
-# YYID generator in Rust [![Travis](https://img.shields.io/travis/asaaki/yyid.rs.svg?style=flat-square)](https://travis-ci.org/asaaki/yyid.rs) [![yyid on crates.io](https://img.shields.io/crates/v/yyid.svg?style=flat-square)](https://crates.io/crates/yyid) [![MMM incubated](https://img.shields.io/badge/MMM-incubated-blue.svg?style=flat-square)](http://moremicromodules.org/)
+# YYID generator in Rust 
+
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/asaaki/yyid.rs/Rust/master)  
+[![yyid on crates.io](https://img.shields.io/crates/v/yyid.svg?style=flat-square)](https://crates.io/crates/yyid) 
 
 Generates random tokens that look like [type 4 UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29): `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
 
@@ -13,12 +16,10 @@ Source of randomness: [rand](https://doc.rust-lang.org/rand/rand/index.html)
 Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
 
 ```rust
-extern crate yyid;
-
-use yyid::yyid_string;
+use yyid::YYID;
 
 fn main() {
-    println!("{}", yyid_string());
+    println!("{}", YYID::new());
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
 ```

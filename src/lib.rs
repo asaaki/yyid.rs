@@ -8,14 +8,10 @@
 //! #### Rust
 //!
 //! ```rust
-//! extern crate yyid;
-//!
 //! use yyid::yyid_string;
 //!
-//! fn main() {
-//!     println!("{}", yyid_string());
-//!     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
-//! }
+//! println!("{}", yyid_string());
+//! // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 //! ```
 //!
 //! #### C
@@ -41,21 +37,17 @@
 //! - Elixir: <https://github.com/janlelis/yyid.ex>
 //! - Go: <https://github.com/janlelis/yyid.go>
 
-// NOTE: Most of this code is currently based on uuid crate
-//       (<https://github.com/rust-lang-nursery/uuid>).
+#![deny(warnings)]
 
-#![doc(html_root_url = "http://asaaki.github.io/yyid.rs/yyid/index.html")]
-
-#![cfg_attr(test, deny(warnings))]
-
-extern crate libc;
-extern crate rand;
-
-use std::fmt;
-use std::hash;
-use std::ffi::CString;
-use libc::c_char;
-use rand::Rng;
+use {
+    getrandom::getrandom,
+    libc::c_char,
+    std::{
+        ffi::CString,
+        fmt::{self, Debug, Display, Formatter},
+        hash::{Hash, Hasher},
+    },
+};
 
 pub type YYIDBytes = [u8; 16];
 
@@ -68,37 +60,43 @@ pub struct YYID {
 ///
 /// ### Example
 /// ```rust
-/// extern crate yyid;
-///
 /// use yyid::yyid_string;
 ///
-/// fn main() {
-///     println!("{}", yyid_string());
-///     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
-/// }
+/// println!("{}", yyid_string());
+/// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 /// ```
 pub fn yyid_string() -> String {
-    YYID::new().to_string()
+    YYID::new().to_hyphenated_string()
 }
 
 /// Creates a new random YYID as a C-compatible char*
 #[no_mangle]
 pub extern "C" fn yyid_c_string() -> *const c_char {
-    let yyid = yyid_string();
+    let yyid = YYID::new().to_hyphenated_string();
     let c_yyid = CString::new(yyid).unwrap();
     c_yyid.into_raw()
 }
 
 impl YYID {
     /// Creates a new random YYID
+    ///
+    /// ### Example
+    /// ```rust
+    /// use yyid::YYID;
+    ///
+    /// let yyid = YYID::new();
+    /// println!("{}", yyid);
+    /// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
+    /// ```
     pub fn new() -> YYID {
-        let mut ybytes = [0u8; 16];
-        rand::thread_rng().fill_bytes(&mut ybytes);
-        YYID { bytes: ybytes }
+        let mut bytes = [0u8; 16];
+        // TODO: in a next version this should be bubbled up
+        getrandom(&mut bytes).expect("getrandom could not safely generate random data");
+        YYID { bytes }
     }
 
     /// Return an array of 16 octets containing the YYID data
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+    pub fn as_bytes(&self) -> &'_ [u8] {
         &self.bytes
     }
 
@@ -106,29 +104,16 @@ impl YYID {
     /// hyphen.
     ///
     /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
-    pub fn to_string(&self) -> String {
+    pub fn to_hyphenated_string(&self) -> String {
         let b = &self.bytes;
-        format!("{:02x}{:02x}{:02x}{:02x}-\
+        format!(
+            "{:02x}{:02x}{:02x}{:02x}-\
                  {:02x}{:02x}-\
                  {:02x}{:02x}-\
                  {:02x}{:02x}-\
                  {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                b[0],
-                b[1],
-                b[2],
-                b[3],
-                b[4],
-                b[5],
-                b[6],
-                b[7],
-                b[8],
-                b[9],
-                b[10],
-                b[11],
-                b[12],
-                b[13],
-                b[14],
-                b[15])
+            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
+        )
     }
 
     /// Returns the YYID as a string of 32 hexadecimal digits
@@ -136,27 +121,14 @@ impl YYID {
     /// Example: `2ff0b694960e88a4693a66cff98fc56c`
     pub fn to_simple_string(&self) -> String {
         let b = &self.bytes;
-        format!("{:02x}{:02x}{:02x}{:02x}\
+        format!(
+            "{:02x}{:02x}{:02x}{:02x}\
                  {:02x}{:02x}\
                  {:02x}{:02x}\
                  {:02x}{:02x}\
                  {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                b[0],
-                b[1],
-                b[2],
-                b[3],
-                b[4],
-                b[5],
-                b[6],
-                b[7],
-                b[8],
-                b[9],
-                b[10],
-                b[11],
-                b[12],
-                b[13],
-                b[14],
-                b[15])
+            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
+        )
     }
 
     /// Returns the YYID formatted as a full URN string
@@ -170,24 +142,55 @@ impl YYID {
     }
 }
 
+impl Default for YYID {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Convert the YYID to a hexadecimal-based string representation wrapped in
 /// `YYID()`
-impl fmt::Debug for YYID {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "YYID(\"{}\")", self.to_string())
+/// ### Example
+/// ```rust
+/// use yyid::YYID;
+///
+/// let yyid = YYID::new();
+/// println!("{:?}", yyid);
+/// ```
+
+impl Debug for YYID {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "YYID(\"{}\")", self.to_hyphenated_string())
     }
 }
 
 /// Convert the YYID to a hexadecimal-based string representation
-impl fmt::Display for YYID {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+///
+/// ### Example
+/// ```rust
+/// use yyid::YYID;
+///
+/// let yyid = YYID::new();
+/// println!("{}", yyid);
+/// ```
+impl Display for YYID {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_hyphenated_string())
     }
 }
 
 /// Test two YYIDs for equality
 ///
 /// YYIDs are equal only when they are byte-for-byte identical
+///
+/// ### Example
+/// ```rust
+/// use yyid::YYID;
+///
+/// let yyid1 = YYID::new();
+/// let yyid2 = YYID::new();
+/// assert_ne!(yyid1, yyid2);
+/// ```
 impl PartialEq for YYID {
     fn eq(&self, other: &YYID) -> bool {
         self.bytes == other.bytes
@@ -196,30 +199,19 @@ impl PartialEq for YYID {
 
 impl Eq for YYID {}
 
-/// Generates a random instance of YYID (V4 conformant)
-impl rand::Rand for YYID {
-    #[inline]
-    fn rand<R: rand::Rng>(rng: &mut R) -> YYID {
-        let mut ybytes = [0u8; 16];
-        rng.fill_bytes(&mut ybytes);
-        YYID { bytes: ybytes }
-    }
-}
-
-impl hash::Hash for YYID {
-    fn hash<S: hash::Hasher>(&self, state: &mut S) {
+impl Hash for YYID {
+    fn hash<S: Hasher>(&self, state: &mut S) {
         self.bytes.hash(state)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::YYID;
-    use super::yyid_string;
     use super::yyid_c_string;
+    use super::yyid_string;
+    use super::YYID;
     use std::ffi::CStr;
     use std::str;
-    use rand;
 
     #[test]
     fn test_new() {
@@ -230,9 +222,9 @@ mod tests {
     }
 
     #[test]
-    fn test_to_string() {
+    fn test_to_hyphenated_string() {
         let yyid = YYID::new();
-        let ystr = yyid.to_string();
+        let ystr = yyid.to_hyphenated_string();
 
         assert!(ystr.len() == 36);
         assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -283,9 +275,7 @@ mod tests {
         let yhyphen = yyid.to_string();
         let ysimple = yyid.to_simple_string();
 
-        let ysimplified = yhyphen.chars()
-            .filter(|&c| c != '-')
-            .collect::<String>();
+        let ysimplified = yhyphen.chars().filter(|&c| c != '-').collect::<String>();
 
         assert!(ysimplified == ysimple);
     }
@@ -324,16 +314,6 @@ mod tests {
         assert!(yyid3 != yyid1);
         assert!(yyid2 != yyid3);
         assert!(yyid3 != yyid2);
-    }
-
-    #[test]
-    fn test_rand_rand() {
-        let mut rng = rand::thread_rng();
-        let yyid: YYID = rand::Rand::rand(&mut rng);
-        let ybytes = yyid.as_bytes();
-
-        assert!(ybytes.len() == 16);
-        assert!(!ybytes.iter().all(|&b| b == 0));
     }
 
     #[test]
