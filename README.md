@@ -33,7 +33,7 @@ fn main() {
 * It does not implement everything (no parsing, only generation of tokens)
 * Functionality will also be reduced down to the reference implementations (see _Also Available As_)
 * The default format is with hyphens (more human readable by default, only 4 bytes extra)
-* For simplicity only the *Ref types are implemented (no owning structures)
+* For simplicity only the *Ref types are implemented (no owning structures); format at the latest point possible
 
 ## Also Available As 
 
