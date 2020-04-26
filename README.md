@@ -1,13 +1,12 @@
 # YYID generator in Rust 
 
-![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/asaaki/yyid.rs/Rust/master)  
-[![yyid on crates.io](https://img.shields.io/crates/v/yyid.svg?style=flat-square)](https://crates.io/crates/yyid) 
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/asaaki/yyid.rs/Rust/master)](https://github.com/asaaki/yyid.rs/actions?query=workflow%3ARust)  [![yyid on crates.io](https://img.shields.io/crates/v/yyid.svg)](https://crates.io/crates/yyid) [![yyid documentation](https://docs.rs/yyid/badge.svg)](https://docs.rs/yyid/)
 
 Generates random tokens that look like [type 4 UUIDs](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29): `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
 
 In contrast to [RFC 4122](https://tools.ietf.org/rfc/rfc4122.txt), it uses all digits (128bit).
 
-Source of randomness: [rand](https://doc.rust-lang.org/rand/rand/index.html)
+Source of randomness: [getrandom](https://crates.io/crates/getrandom)
 
 ## Example
 
@@ -33,7 +32,7 @@ const char* my_yyid = yyid_c_string();
 
 ## Documentation
 
-Can be found at <http://asaaki.github.io/yyid.rs/yyid/index.html>.
+<https://docs.rs/yyid/>
 
 ## Furthermore
 
