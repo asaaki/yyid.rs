@@ -8,26 +8,19 @@ In contrast to [RFC 4122](https://tools.ietf.org/rfc/rfc4122.txt), it uses all d
 
 Source of randomness: [getrandom](https://crates.io/crates/getrandom)
 
-## Example
+## Examples
 
 ### Rust
 
 Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
 
 ```rust
-use yyid::YYID;
+use yyid::*;
 
 fn main() {
     println!("{}", YYID::new());
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
-```
-
-### C
-
-```c
-#include "path/to/yyid.rs/include/libyyid.h"
-const char* my_yyid = yyid_c_string();
 ```
 
 ## Documentation

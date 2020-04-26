@@ -5,20 +5,11 @@
 //!
 //! ### Example
 //!
-//! #### Rust
-//!
 //! ```rust
 //! use yyid::yyid_string;
 //!
 //! println!("{}", yyid_string());
 //! // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
-//! ```
-//!
-//! #### C
-//!
-//! ```c
-//! #include "path/to/yyid.rs/include/libyyid.h"
-//! const char* my_yyid = yyid_c_string();
 //! ```
 //!
 //! ### Other libraries for YYID
@@ -41,9 +32,7 @@
 
 use {
     getrandom::getrandom,
-    libc::c_char,
     std::{
-        ffi::CString,
         fmt::{self, Debug, Display, Formatter},
         hash::{Hash, Hasher},
     },
@@ -67,26 +56,6 @@ pub struct YYID {
 /// ```
 pub fn yyid_string() -> String {
     YYID::new().to_hyphenated_string()
-}
-
-/// Creates a new random YYID as a C-compatible char*
-///
-/// ### Example
-/// ```rust
-/// use yyid::yyid_c_string;
-/// use std::ffi::CString;
-///
-/// let yyid_c_string_ptr = yyid_c_string();
-/// unsafe {
-///     assert_eq!(b'-',  *yyid_c_string_ptr.offset(8) as u8);
-///     let _ = CString::from_raw(yyid_c_string_ptr);
-/// }
-/// ```
-#[no_mangle]
-pub extern "C" fn yyid_c_string() -> *mut c_char {
-    let yyid = YYID::new().to_hyphenated_string();
-    let c_yyid = CString::new(yyid).expect("CString::new failed");
-    c_yyid.into_raw()
 }
 
 impl YYID {
@@ -219,11 +188,7 @@ impl Hash for YYID {
 
 #[cfg(test)]
 mod tests {
-    use super::yyid_c_string;
-    use super::yyid_string;
-    use super::YYID;
-    use std::ffi::CStr;
-    use std::str;
+    use super::*;
 
     #[test]
     fn test_new() {
@@ -240,16 +205,6 @@ mod tests {
 
         assert!(ystr.len() == 36);
         assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
-    }
-
-    #[test]
-    fn test_exported_yyid_c_string() {
-        let yyid_cptr = yyid_c_string();
-        let yyid_cstr = unsafe { CStr::from_ptr(yyid_cptr) };
-        let yyid = str::from_utf8(yyid_cstr.to_bytes()).unwrap();
-
-        assert!(yyid.len() == 36);
-        assert!(yyid.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
