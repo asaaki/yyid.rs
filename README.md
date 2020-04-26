@@ -27,15 +27,15 @@ fn main() {
 
 <https://docs.rs/yyid/>
 
-## Furthermore
+## Notes
 
-The current implementation is derived from the [uuid](http://doc.rust-lang.org/uuid/uuid/index.html) crate.
+* The current implementation is derived from the [uuid](http://doc.rust-lang.org/uuid/uuid/index.html) crate
+* It does not implement everything (no parsing, only generation of tokens)
+* Functionality will also be reduced down to the reference implementations (see _Also Available As_)
+* The default format is with hyphens (more human readable by default, only 4 bytes extra)
+* For simplicity only the *Ref types are implemented (no owning structures); format at the latest point possible
 
-It does not implement everything (no parsing, only generation of tokens).
-
-Functionality will also be reduced down to the reference implementations (see below).
-
-## Also Available
+## Also Available As 
 
 - YYID for [Ruby](https://github.com/janlelis/yyid.rb)
 - YYID for [JavaScript](https://github.com/janlelis/yyid.js)

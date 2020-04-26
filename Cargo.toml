@@ -10,15 +10,15 @@ repository = "https://github.com/asaaki/yyid.rs"
 description = "Yyid generator (random tokens like UUIDv4, but using all the bits)"
 keywords = ["yyid", "uuid", "unique", "random", "token"]
 # https://crates.io/category_slugs
-categories = ["data-structures", "development-tools::cargo-plugins"]
+categories = ["data-structures", "no-std"]
 exclude = [".github/**"]
 
 [badges]
 maintenance = { status = "as-is" }
 
-[lib]
-crate-type = ["rlib", "staticlib"]
-
 [dependencies]
 libc = "0.2"
 getrandom = "0.1"
+
+[features]
+std = []
