@@ -4,6 +4,7 @@ ci:
 	cargo clippy
 	cargo test --verbose
 	cargo run --example basic
+	@echo "Done."
 
 local:	
 	cargo build --verbose
