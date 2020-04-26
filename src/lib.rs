@@ -16,7 +16,7 @@
 //! // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 //! ```
 //!
-//! ### Other libraries for Yyid
+//! ### Other libraries for YYIDs
 //!
 //! - Ruby: <https://github.com/janlelis/yyid.rb>
 //!
@@ -28,43 +28,35 @@
 //!   #=> "37ab3494-7e04-ecf1-b99f-259999a44d16"
 //!   ```
 //!
-//! - Ruby: <https://github.com/janlelis/yyid.rb>
 //! - JavaScript: <https://github.com/janlelis/yyid.js>
 //! - Elixir: <https://github.com/janlelis/yyid.ex>
 //! - Go: <https://github.com/janlelis/yyid.go>
 
+#![no_std]
 #![deny(warnings, missing_debug_implementations, missing_docs)]
 
-use {
-    core::{
-        fmt::{self, Debug, Display, Formatter},
-        hash::{Hash, Hasher},
-    },
-    getrandom::getrandom,
-};
+#[cfg(any(feature = "std", test))]
+#[macro_use]
+extern crate std;
+
+#[cfg(all(not(feature = "std"), not(test)))]
+#[allow(unused_imports)]
+#[macro_use]
+extern crate core as std;
+
+use {crate::std::fmt, getrandom::getrandom};
+
+pub mod refs;
 
 /// A 128-bit (16 byte) buffer containing the ID.
-pub type YyidBytes = [u8; 16];
+pub type Bytes = [u8; 16];
 
 /// A yniversally ynique identifier (Yyid).
-#[derive(Copy, Clone)]
-pub struct Yyid(YyidBytes);
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Yyid(Bytes);
 
-/// Creates a new random Yyid as String
-///
-/// ### Example
-/// ```rust
-/// use yyid::yyid_string;
-///
-/// println!("{}", yyid_string());
-/// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
-/// ```
-pub fn yyid_string() -> String {
-    Yyid::new().to_hyphenated_string()
-}
-
-impl Yyid {
-    /// Creates a new random Yyid
+impl<'a> Yyid {
+    /// Creates a new random YYID
     ///
     /// ### Example
     /// ```rust
@@ -92,146 +84,98 @@ impl Yyid {
     ///     nil.to_string(),
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
-    /// assert_eq!(nil.as_bytes(), [0u8; 16]);
+    /// assert_eq!(nil.as_bytes(), &[0u8; 16]);
     /// ```
-    pub fn nil() -> Self {
+    pub const fn nil() -> Self {
         Yyid([0u8; 16])
     }
 
-    /// Return an array of 16 octets containing the Yyid data
-    pub fn as_bytes(&self) -> &'_ [u8] {
+    /// Tests if the YYID is nil.
+    pub fn is_nil(&self) -> bool {
+        self.as_bytes().iter().all(|&b| b == 0)
+    }
+
+    /// Return an array of 16 octets containing the YYID data
+    pub fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
-    /// Returns a string of hexadecimal digits, separated into groups with a
-    /// hyphen.
-    ///
-    /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
-    pub fn to_hyphenated_string(&self) -> String {
-        let b = &self.0;
-        format!(
-            "{:02x}{:02x}{:02x}{:02x}-\
-                 {:02x}{:02x}-\
-                 {:02x}{:02x}-\
-                 {:02x}{:02x}-\
-                 {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
-        )
+    /// Returns a 128bit value containing the YYID data.
+    // TODO: Add example once a parse_str or From is implemented
+    pub fn to_u128(&self) -> u128 {
+        u128::from(self.as_bytes()[0]) << 120
+            | u128::from(self.as_bytes()[1]) << 112
+            | u128::from(self.as_bytes()[2]) << 104
+            | u128::from(self.as_bytes()[3]) << 96
+            | u128::from(self.as_bytes()[4]) << 88
+            | u128::from(self.as_bytes()[5]) << 80
+            | u128::from(self.as_bytes()[6]) << 72
+            | u128::from(self.as_bytes()[7]) << 64
+            | u128::from(self.as_bytes()[8]) << 56
+            | u128::from(self.as_bytes()[9]) << 48
+            | u128::from(self.as_bytes()[10]) << 40
+            | u128::from(self.as_bytes()[11]) << 32
+            | u128::from(self.as_bytes()[12]) << 24
+            | u128::from(self.as_bytes()[13]) << 16
+            | u128::from(self.as_bytes()[14]) << 8
+            | u128::from(self.as_bytes()[15])
     }
 
-    /// Returns the Yyid as a string of 32 hexadecimal digits
-    ///
-    /// Example: `2ff0b694960e88a4693a66cff98fc56c`
-    pub fn to_simple_string(&self) -> String {
-        let b = &self.0;
-        format!(
-            "{:02x}{:02x}{:02x}{:02x}\
-                 {:02x}{:02x}\
-                 {:02x}{:02x}\
-                 {:02x}{:02x}\
-                 {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]
-        )
-    }
-
-    /// Returns the Yyid formatted as a full URN string
-    ///
-    /// This is the same as the hyphenated format, but with the "urn:yyid:"
-    /// prefix.
-    ///
-    /// Example: `urn:yyid:05f7d6d3-1727-ce2d-6cf2-3b73ad48ff73`
-    pub fn to_urn_string(&self) -> String {
-        format!("urn:yyid:{}", self.to_string())
+    /// Returns a 128bit little-endian value containing the YYID data.
+    // TODO: Add example once a parse_str or From is implemented
+    pub fn to_u128_le(&self) -> u128 {
+        u128::from(self.as_bytes()[0])
+            | u128::from(self.as_bytes()[1]) << 8
+            | u128::from(self.as_bytes()[2]) << 16
+            | u128::from(self.as_bytes()[3]) << 24
+            | u128::from(self.as_bytes()[4]) << 32
+            | u128::from(self.as_bytes()[5]) << 40
+            | u128::from(self.as_bytes()[6]) << 48
+            | u128::from(self.as_bytes()[7]) << 56
+            | u128::from(self.as_bytes()[8]) << 64
+            | u128::from(self.as_bytes()[9]) << 72
+            | u128::from(self.as_bytes()[10]) << 80
+            | u128::from(self.as_bytes()[11]) << 88
+            | u128::from(self.as_bytes()[12]) << 96
+            | u128::from(self.as_bytes()[13]) << 104
+            | u128::from(self.as_bytes()[14]) << 112
+            | u128::from(self.as_bytes()[15]) << 120
     }
 }
 
 impl Default for Yyid {
+    #[inline]
     fn default() -> Self {
-        Self::new()
+        Self::nil()
     }
 }
 
-/// Convert the Yyid to a hexadecimal-based string representation wrapped in
-/// `Yyid()`
-/// ### Example
-/// ```rust
-/// use yyid::Yyid;
-///
-/// let yyid = Yyid::new();
-/// println!("{:?}", yyid);
-/// ```
-
-impl Debug for Yyid {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "Yyid(\"{}\")", self.to_hyphenated_string())
-    }
-}
-
-/// Convert the Yyid to a hexadecimal-based string representation
-///
-/// ### Example
-/// ```rust
-/// use yyid::Yyid;
-///
-/// let yyid = Yyid::new();
-/// println!("{}", yyid);
-/// ```
-impl Display for Yyid {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_hyphenated_string())
-    }
-}
-
-/// Test two Yyids for equality
-///
-/// Yyids are equal only when they are byte-for-byte identical
-///
-/// ### Example
-/// ```rust
-/// use yyid::Yyid;
-///
-/// let yyid1 = Yyid::new();
-/// let yyid2 = Yyid::new();
-/// assert_ne!(yyid1, yyid2);
-/// ```
-impl PartialEq for Yyid {
-    fn eq(&self, other: &Yyid) -> bool {
-        self.0 == other.0
-    }
-}
-
-impl Eq for Yyid {}
-
-impl Hash for Yyid {
-    fn hash<S: Hasher>(&self, state: &mut S) {
-        self.0.hash(state)
+impl fmt::Display for Yyid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{
+        std::string::{String, ToString},
+        *,
+    };
 
     #[test]
     fn test_new() {
         let yyid = Yyid::new();
-        let ystr = yyid.to_simple_string();
-
-        assert!(ystr.len() == 32);
-    }
-
-    #[test]
-    fn test_to_hyphenated_string() {
-        let yyid = Yyid::new();
-        let ystr = yyid.to_hyphenated_string();
+        let ystr = yyid.to_string();
 
         assert!(ystr.len() == 36);
         assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
-    fn test_yyid_string() {
-        let ystr = yyid_string();
+    fn test_to_hyphenated_string() {
+        let yyid = Yyid::new();
+        let ystr = yyid.to_hyphenated_ref().to_string();
 
         assert!(ystr.len() == 36);
         assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -240,7 +184,7 @@ mod tests {
     #[test]
     fn test_to_simple_string() {
         let yyid = Yyid::new();
-        let ystr = yyid.to_simple_string();
+        let ystr = yyid.to_simple_ref().to_string();
 
         assert!(ystr.len() == 32);
         assert!(ystr.chars().all(|c| c.is_digit(16)));
@@ -249,7 +193,7 @@ mod tests {
     #[test]
     fn test_to_urn_string() {
         let yyid = Yyid::new();
-        let yurn = yyid.to_urn_string();
+        let yurn = yyid.to_urn_ref().to_string();
         let ystr = &yurn[9..];
 
         assert!(yurn.starts_with("urn:yyid:"));
@@ -262,7 +206,7 @@ mod tests {
         let yyid = Yyid::new();
 
         let yhyphen = yyid.to_string();
-        let ysimple = yyid.to_simple_string();
+        let ysimple = yyid.to_simple_ref().to_string();
 
         let ysimplified = yhyphen.chars().filter(|&c| c != '-').collect::<String>();
 
