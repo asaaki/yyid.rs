@@ -1,0 +1,12 @@
+max_width = 120
+use_try_shorthand = true
+# all unstable/nightly flags:
+# version = "Two"
+# hard_tabs = false
+# tab_spaces = 4
+# newline_style = "Unix"
+# wrap_comments = true
+# normalize_comments = true
+# merge_derives = true
+# force_explicit_abi = true
+# unstable_features = false
