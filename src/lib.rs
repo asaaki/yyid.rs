@@ -3,12 +3,16 @@
 //! - GitHub: <https://github.com/asaaki/yyid.rs>
 //! - crates.io: <https://crates.io/crates/yyid>
 //!
+//! They are like UUIDs (v4), but using all the bits.
+//! Therefore they are not UUID standard compliant,
+//! so use with care or only for internal IDs.
+//!
 //! ### Example
 //!
 //! ```rust
-//! use yyid::yyid_string;
+//! use yyid::*;
 //!
-//! println!("{}", yyid_string());
+//! println!("{}", YYID::new());
 //! // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 //! ```
 //!
@@ -28,18 +32,20 @@
 //! - Elixir: <https://github.com/janlelis/yyid.ex>
 //! - Go: <https://github.com/janlelis/yyid.go>
 
-#![deny(warnings)]
+#![deny(warnings, missing_debug_implementations, missing_docs)]
 
 use {
-    getrandom::getrandom,
-    std::{
+    core::{
         fmt::{self, Debug, Display, Formatter},
         hash::{Hash, Hasher},
     },
+    getrandom::getrandom,
 };
 
+/// A 128-bit (16 byte) buffer containing the ID.
 pub type YYIDBytes = [u8; 16];
 
+/// A yniversally ynique identifier (YYID).
 #[derive(Copy, Clone)]
 pub struct YYID {
     bytes: YYIDBytes,
