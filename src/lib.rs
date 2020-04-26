@@ -12,11 +12,11 @@
 //! ```rust
 //! use yyid::*;
 //!
-//! println!("{}", YYID::new());
+//! println!("{}", Yyid::new());
 //! // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 //! ```
 //!
-//! ### Other libraries for YYID
+//! ### Other libraries for Yyid
 //!
 //! - Ruby: <https://github.com/janlelis/yyid.rb>
 //!
@@ -28,6 +28,7 @@
 //!   #=> "37ab3494-7e04-ecf1-b99f-259999a44d16"
 //!   ```
 //!
+//! - Ruby: <https://github.com/janlelis/yyid.rb>
 //! - JavaScript: <https://github.com/janlelis/yyid.js>
 //! - Elixir: <https://github.com/janlelis/yyid.ex>
 //! - Go: <https://github.com/janlelis/yyid.go>
@@ -43,15 +44,13 @@ use {
 };
 
 /// A 128-bit (16 byte) buffer containing the ID.
-pub type YYIDBytes = [u8; 16];
+pub type YyidBytes = [u8; 16];
 
-/// A yniversally ynique identifier (YYID).
+/// A yniversally ynique identifier (Yyid).
 #[derive(Copy, Clone)]
-pub struct YYID {
-    bytes: YYIDBytes,
-}
+pub struct Yyid(YyidBytes);
 
-/// Creates a new random YYID as String
+/// Creates a new random Yyid as String
 ///
 /// ### Example
 /// ```rust
@@ -61,30 +60,47 @@ pub struct YYID {
 /// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 /// ```
 pub fn yyid_string() -> String {
-    YYID::new().to_hyphenated_string()
+    Yyid::new().to_hyphenated_string()
 }
 
-impl YYID {
-    /// Creates a new random YYID
+impl Yyid {
+    /// Creates a new random Yyid
     ///
     /// ### Example
     /// ```rust
-    /// use yyid::YYID;
+    /// use yyid::Yyid;
     ///
-    /// let yyid = YYID::new();
+    /// let yyid = Yyid::new();
     /// println!("{}", yyid);
     /// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
     /// ```
-    pub fn new() -> YYID {
+    pub fn new() -> Self {
         let mut bytes = [0u8; 16];
         // TODO: in a next version this should be bubbled up
         getrandom(&mut bytes).expect("getrandom could not safely generate random data");
-        YYID { bytes }
+        Yyid(bytes)
     }
 
-    /// Return an array of 16 octets containing the YYID data
+    /// Special case: a "nil" YYID
+    ///
+    /// ### Example
+    /// ```rust
+    /// use yyid::Yyid;
+    ///
+    /// let nil = Yyid::nil();
+    /// assert_eq!(
+    ///     nil.to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
+    /// assert_eq!(nil.as_bytes(), [0u8; 16]);
+    /// ```
+    pub fn nil() -> Self {
+        Yyid([0u8; 16])
+    }
+
+    /// Return an array of 16 octets containing the Yyid data
     pub fn as_bytes(&self) -> &'_ [u8] {
-        &self.bytes
+        &self.0
     }
 
     /// Returns a string of hexadecimal digits, separated into groups with a
@@ -92,7 +108,7 @@ impl YYID {
     ///
     /// Example: `02e7f0f6-067e-8c92-b25c-12c9180540a9`
     pub fn to_hyphenated_string(&self) -> String {
-        let b = &self.bytes;
+        let b = &self.0;
         format!(
             "{:02x}{:02x}{:02x}{:02x}-\
                  {:02x}{:02x}-\
@@ -103,11 +119,11 @@ impl YYID {
         )
     }
 
-    /// Returns the YYID as a string of 32 hexadecimal digits
+    /// Returns the Yyid as a string of 32 hexadecimal digits
     ///
     /// Example: `2ff0b694960e88a4693a66cff98fc56c`
     pub fn to_simple_string(&self) -> String {
-        let b = &self.bytes;
+        let b = &self.0;
         format!(
             "{:02x}{:02x}{:02x}{:02x}\
                  {:02x}{:02x}\
@@ -118,7 +134,7 @@ impl YYID {
         )
     }
 
-    /// Returns the YYID formatted as a full URN string
+    /// Returns the Yyid formatted as a full URN string
     ///
     /// This is the same as the hyphenated format, but with the "urn:yyid:"
     /// prefix.
@@ -129,66 +145,66 @@ impl YYID {
     }
 }
 
-impl Default for YYID {
+impl Default for Yyid {
     fn default() -> Self {
         Self::new()
     }
 }
 
-/// Convert the YYID to a hexadecimal-based string representation wrapped in
-/// `YYID()`
+/// Convert the Yyid to a hexadecimal-based string representation wrapped in
+/// `Yyid()`
 /// ### Example
 /// ```rust
-/// use yyid::YYID;
+/// use yyid::Yyid;
 ///
-/// let yyid = YYID::new();
+/// let yyid = Yyid::new();
 /// println!("{:?}", yyid);
 /// ```
 
-impl Debug for YYID {
+impl Debug for Yyid {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "YYID(\"{}\")", self.to_hyphenated_string())
+        write!(f, "Yyid(\"{}\")", self.to_hyphenated_string())
     }
 }
 
-/// Convert the YYID to a hexadecimal-based string representation
+/// Convert the Yyid to a hexadecimal-based string representation
 ///
 /// ### Example
 /// ```rust
-/// use yyid::YYID;
+/// use yyid::Yyid;
 ///
-/// let yyid = YYID::new();
+/// let yyid = Yyid::new();
 /// println!("{}", yyid);
 /// ```
-impl Display for YYID {
+impl Display for Yyid {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}", self.to_hyphenated_string())
     }
 }
 
-/// Test two YYIDs for equality
+/// Test two Yyids for equality
 ///
-/// YYIDs are equal only when they are byte-for-byte identical
+/// Yyids are equal only when they are byte-for-byte identical
 ///
 /// ### Example
 /// ```rust
-/// use yyid::YYID;
+/// use yyid::Yyid;
 ///
-/// let yyid1 = YYID::new();
-/// let yyid2 = YYID::new();
+/// let yyid1 = Yyid::new();
+/// let yyid2 = Yyid::new();
 /// assert_ne!(yyid1, yyid2);
 /// ```
-impl PartialEq for YYID {
-    fn eq(&self, other: &YYID) -> bool {
-        self.bytes == other.bytes
+impl PartialEq for Yyid {
+    fn eq(&self, other: &Yyid) -> bool {
+        self.0 == other.0
     }
 }
 
-impl Eq for YYID {}
+impl Eq for Yyid {}
 
-impl Hash for YYID {
+impl Hash for Yyid {
     fn hash<S: Hasher>(&self, state: &mut S) {
-        self.bytes.hash(state)
+        self.0.hash(state)
     }
 }
 
@@ -198,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
         let ystr = yyid.to_simple_string();
 
         assert!(ystr.len() == 32);
@@ -206,7 +222,7 @@ mod tests {
 
     #[test]
     fn test_to_hyphenated_string() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
         let ystr = yyid.to_hyphenated_string();
 
         assert!(ystr.len() == 36);
@@ -223,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_to_simple_string() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
         let ystr = yyid.to_simple_string();
 
         assert!(ystr.len() == 32);
@@ -232,7 +248,7 @@ mod tests {
 
     #[test]
     fn test_to_urn_string() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
         let yurn = yyid.to_urn_string();
         let ystr = &yurn[9..];
 
@@ -243,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_to_simple_string_matching() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
 
         let yhyphen = yyid.to_string();
         let ysimple = yyid.to_simple_string();
@@ -255,8 +271,8 @@ mod tests {
 
     #[test]
     fn test_compare() {
-        let yyid1 = YYID::new();
-        let yyid2 = YYID::new();
+        let yyid1 = Yyid::new();
+        let yyid2 = Yyid::new();
 
         assert!(yyid1 == yyid1);
         assert!(yyid2 == yyid2);
@@ -266,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_as_bytes() {
-        let yyid = YYID::new();
+        let yyid = Yyid::new();
         let ybytes = yyid.as_bytes();
 
         assert!(ybytes.len() == 16);
@@ -275,9 +291,9 @@ mod tests {
 
     #[test]
     fn test_operator_eq() {
-        let yyid1 = YYID::new();
+        let yyid1 = Yyid::new();
         let yyid2 = yyid1.clone();
-        let yyid3 = YYID::new();
+        let yyid3 = Yyid::new();
 
         assert!(yyid1 == yyid1);
         assert!(yyid1 == yyid2);
@@ -293,8 +309,8 @@ mod tests {
     fn test_iterbytes_impl_for_yyid() {
         use std::collections::HashSet;
         let mut set = HashSet::new();
-        let yyid1 = YYID::new();
-        let yyid2 = YYID::new();
+        let yyid1 = Yyid::new();
+        let yyid2 = Yyid::new();
         set.insert(yyid1.clone());
         assert!(set.contains(&yyid1));
         assert!(!set.contains(&yyid2));

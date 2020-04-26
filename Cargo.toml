@@ -1,13 +1,13 @@
 [package]
 name = "yyid"
-version = "0.4.0-pre"
+version = "0.5.0-pre"
 authors = ["Christoph Grabo <asaaki@mannaz.cc>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
 homepage = "https://github.com/asaaki/yyid.rs"
 repository = "https://github.com/asaaki/yyid.rs"
-description = "YYID generator (random tokens like UUIDv4, but using all the bits)"
+description = "Yyid generator (random tokens like UUIDv4, but using all the bits)"
 keywords = ["yyid", "uuid", "unique", "random", "token"]
 # https://crates.io/category_slugs
 categories = ["data-structures", "development-tools::cargo-plugins"]

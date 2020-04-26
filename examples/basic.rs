@@ -1,7 +1,7 @@
 use yyid::*;
 
 fn main() {
-    let yyid = YYID::new();
+    let yyid = Yyid::new();
     println!("[Display] my yyid is: {}", yyid);
     println!("[Debug]   my yyid is: {:#?}", yyid);
 }

@@ -18,7 +18,7 @@ Add `yyid = "*"` to your dependencies section in `Cargo.toml`.
 use yyid::*;
 
 fn main() {
-    println!("{}", YYID::new());
+    println!("{}", Yyid::new());
     // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
 }
 ```
