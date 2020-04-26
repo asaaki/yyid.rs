@@ -70,10 +70,22 @@ pub fn yyid_string() -> String {
 }
 
 /// Creates a new random YYID as a C-compatible char*
+///
+/// ### Example
+/// ```rust
+/// use yyid::yyid_c_string;
+/// use std::ffi::CString;
+///
+/// let yyid_c_string_ptr = yyid_c_string();
+/// unsafe {
+///     assert_eq!(b'-',  *yyid_c_string_ptr.offset(8) as u8);
+///     let _ = CString::from_raw(yyid_c_string_ptr);
+/// }
+/// ```
 #[no_mangle]
-pub extern "C" fn yyid_c_string() -> *const c_char {
+pub extern "C" fn yyid_c_string() -> *mut c_char {
     let yyid = YYID::new().to_hyphenated_string();
-    let c_yyid = CString::new(yyid).unwrap();
+    let c_yyid = CString::new(yyid).expect("CString::new failed");
     c_yyid.into_raw()
 }
 
