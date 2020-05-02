@@ -41,19 +41,16 @@ fn encode<'a>(full_buffer: &'a mut [u8], start: usize, yyid: &Yyid, hyphens: boo
     {
         let buffer = &mut full_buffer[start..start + len];
         let bytes = yyid.as_bytes();
+        let hex = &LOWER;
 
         for group in 0..5 {
-            // If we're writing hyphens, we need to shift the output
-            // location along by how many of them have been written
-            // before this point. That's exactly the (0-indexed) group
-            // number.
             let hyphens_before = if hyphens { group } else { 0 };
             for idx in BYTE_POSITIONS[group]..BYTE_POSITIONS[group + 1] {
                 let b = bytes[idx];
                 let out_idx = hyphens_before + 2 * idx;
 
-                buffer[out_idx] = LOWER[(b >> 4) as usize];
-                buffer[out_idx + 1] = LOWER[(b & 0b1111) as usize];
+                buffer[out_idx] = hex[(b >> 4) as usize];
+                buffer[out_idx + 1] = hex[(b & 0b1111) as usize];
             }
 
             if group != 4 && hyphens {
@@ -133,44 +130,38 @@ impl<'a> UrnRef<'a> {
 
 // === Formatters ===
 
-impl fmt::LowerHex for Yyid {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_simple_ref(), f)
-    }
+macro_rules! impl_adapter_traits {
+    ($($T:ident<$($a:lifetime),*>),+) => {$(
+        impl<$($a),*> fmt::Display for $T<$($a),*> {
+            #[inline]
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt::LowerHex::fmt(self, f)
+            }
+        }
+
+        impl<$($a),*> fmt::LowerHex for $T<$($a),*> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(self.encode(&mut [0; $T::LENGTH]))
+            }
+        }
+
+        impl_adapter_from!($T<$($a),*>);
+    )+}
 }
 
-impl<'a> fmt::Display for HyphenatedRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
+macro_rules! impl_adapter_from {
+    ($T:ident<$a:lifetime>) => {
+        impl<$a> From<&$a Yyid> for $T<$a> {
+            #[inline]
+            fn from(f: &$a Yyid) -> Self {
+                $T::from_yyid_ref(f)
+            }
+        }
+    };
 }
 
-impl<'a> fmt::LowerHex for HyphenatedRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.encode(&mut [0; HyphenatedRef::LENGTH]))
-    }
-}
-
-impl<'a> fmt::Display for SimpleRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl<'a> fmt::LowerHex for SimpleRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.encode(&mut [0; SimpleRef::LENGTH]))
-    }
-}
-
-impl<'a> fmt::Display for UrnRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl<'a> fmt::LowerHex for UrnRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.encode(&mut [0; UrnRef::LENGTH]))
-    }
+impl_adapter_traits! {
+    HyphenatedRef<'a>,
+    SimpleRef<'a>,
+    UrnRef<'a>
 }

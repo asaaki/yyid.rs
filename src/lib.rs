@@ -52,7 +52,7 @@ pub mod refs;
 pub type Bytes = [u8; 16];
 
 /// A yniversally ynique identifier (Yyid).
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Yyid(Bytes);
 
 impl<'a> Yyid {
@@ -150,8 +150,21 @@ impl Default for Yyid {
     }
 }
 
+impl fmt::Debug for Yyid {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+    }
+}
+
 impl fmt::Display for Yyid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+    }
+}
+
+impl fmt::LowerHex for Yyid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
