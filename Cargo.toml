@@ -16,9 +16,21 @@ exclude = [".github/**"]
 [badges]
 maintenance = { status = "as-is" }
 
+[lib]
+bench = false
+
 [dependencies]
 libc = "0.2"
 getrandom = "0.1"
 
+[dev-dependencies]
+criterion = "0.3"
+# 0.8 still uses the faster but less compatible `rand` implementation for v4
+uuid = { git = "https://github.com/uuid-rs/uuid", rev = "9bb93b6", features = ["v4"] }
+
 [features]
 std = []
+
+[[bench]]
+name = "yyid_vs_uuid_bench"
+harness = false

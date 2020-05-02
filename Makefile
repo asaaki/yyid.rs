@@ -24,3 +24,6 @@ publish:
 	cargo publish
 
 release: release-tag publish
+
+benchmark:
+	RUSTFLAGS="-C target-cpu=native" cargo bench -- --verbose
