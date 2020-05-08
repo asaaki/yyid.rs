@@ -1,5 +1,5 @@
 ci:
-	cargo build --verbose
+	cargo build
 	cargo fmt -- --check --verbose
 	cargo clippy
 	cargo test --verbose
