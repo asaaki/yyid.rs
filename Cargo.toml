@@ -21,7 +21,7 @@ bench = false
 
 [dependencies]
 libc = "0.2"
-getrandom = "0.1"
+getrandom = "0.2"
 
 [dev-dependencies]
 criterion = "0.3"
