@@ -32,5 +32,4 @@ getrandom = "0.2"
 
 [dev-dependencies]
 criterion = "0.3"
-# 0.8 still uses the faster but less compatible `rand` implementation for v4
-uuid = { git = "https://github.com/uuid-rs/uuid", rev = "9bb93b6", features = ["v4"] }
+uuid = { version = "0.8", features = ["v4"] }
