@@ -36,12 +36,11 @@
 #![deny(warnings, missing_debug_implementations, missing_docs)]
 
 #[cfg(any(feature = "std", test))]
-#[macro_use]
+#[allow(unused_imports)]
 extern crate std;
 
 #[cfg(all(not(feature = "std"), not(test)))]
 #[allow(unused_imports)]
-#[macro_use]
 extern crate core as std;
 
 use {crate::std::fmt, getrandom::getrandom};
