@@ -27,7 +27,7 @@ fn random_id_bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("random");
     group.bench_function("uuid", |b| {
         b.iter(|| {
-            let id = Uuid::new_v4().expect("uuid v4 gen err");
+            let id = Uuid::new_v4();
             let output = format!("{}", id.to_hyphenated_ref());
             black_box(output);
         })
