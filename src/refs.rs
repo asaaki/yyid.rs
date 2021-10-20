@@ -95,7 +95,7 @@ impl<'a> HyphenatedRef<'a> {
     }
 
     fn encode<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, &self.0, true)
+        encode(buffer, 0, self.0, true)
     }
 }
 
@@ -109,7 +109,7 @@ impl<'a> SimpleRef<'a> {
     }
 
     fn encode<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, &self.0, false)
+        encode(buffer, 0, self.0, false)
     }
 }
 
@@ -124,7 +124,7 @@ impl<'a> UrnRef<'a> {
 
     fn encode<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(URN_PREFIX);
-        encode(buffer, 9, &self.0, true)
+        encode(buffer, 9, self.0, true)
     }
 }
 

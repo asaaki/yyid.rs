@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn test_operator_eq() {
         let yyid1 = Yyid::new();
-        let yyid2 = yyid1.clone();
+        let yyid2 = yyid1;
         let yyid3 = Yyid::new();
 
         assert!(yyid1 == yyid1);
@@ -268,7 +268,7 @@ mod tests {
         let mut set = HashSet::new();
         let yyid1 = Yyid::new();
         let yyid2 = Yyid::new();
-        set.insert(yyid1.clone());
+        set.insert(yyid1);
         assert!(set.contains(&yyid1));
         assert!(!set.contains(&yyid2));
     }
