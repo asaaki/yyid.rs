@@ -6,7 +6,7 @@ ci:
 	cargo run --example basic
 	@echo "Done."
 
-local:	
+local:
 	cargo build --verbose
 	cargo fmt -- --verbose
 	cargo clippy
@@ -25,5 +25,8 @@ publish:
 
 release: release-tag publish
 
+# cargo install cargo-criterion
 benchmark:
-	RUSTFLAGS="-C target-cpu=native" cargo bench -- --verbose
+	RUSTFLAGS="-C target-cpu=native" cargo criterion --benches
+
+bench: benchmark
