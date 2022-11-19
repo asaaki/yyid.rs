@@ -8,16 +8,12 @@ fn nil_id_bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("nil");
     group.bench_function("uuid", |b| {
         b.iter(|| {
-            let id = Uuid::nil();
-            let output = format!("{}", id.to_hyphenated_ref());
-            black_box(output);
+            black_box(Uuid::nil().hyphenated().to_string());
         })
     });
     group.bench_function("yyid", |b| {
         b.iter(|| {
-            let id = Yyid::nil();
-            let output = format!("{}", id);
-            black_box(output);
+            black_box(Yyid::nil().hyphenated().to_string());
         })
     });
     group.finish()
@@ -27,16 +23,12 @@ fn random_id_bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("random");
     group.bench_function("uuid", |b| {
         b.iter(|| {
-            let id = Uuid::new_v4();
-            let output = format!("{}", id.to_hyphenated_ref());
-            black_box(output);
+            black_box(Uuid::new_v4().hyphenated().to_string());
         })
     });
     group.bench_function("yyid", |b| {
         b.iter(|| {
-            let id = Yyid::new();
-            let output = format!("{}", id);
-            black_box(output);
+            black_box(Yyid::new().hyphenated().to_string());
         })
     });
     group.finish()
@@ -44,7 +36,7 @@ fn random_id_bench(c: &mut Criterion) {
 
 criterion_group!(
     name = benches;
-    config = Criterion::default().measurement_time(Duration::from_secs(60));
+    config = Criterion::default().measurement_time(Duration::from_secs(10));
     targets = nil_id_bench, random_id_bench
 );
 criterion_main!(benches);
