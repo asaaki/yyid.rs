@@ -41,19 +41,44 @@ extern crate std;
 #[cfg(all(not(feature = "std"), not(test)))]
 extern crate core as std;
 
-use getrandom::getrandom;
 use std::fmt;
 
-pub mod refs;
+pub mod fmts;
+
+#[cfg(feature = "uuid")]
+pub mod uuid;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type Bytes = [u8; 16];
 
+const ZEROES: Bytes = [0; 16];
+
 /// A yniversally ynique identifier (Yyid).
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct Yyid(Bytes);
 
-impl<'a> Yyid {
+#[inline]
+fn bytes() -> Bytes {
+    #[cfg(not(feature = "fast-rng"))]
+    {
+        let mut bytes = ZEROES;
+
+        getrandom::getrandom(&mut bytes).unwrap_or_else(|err| {
+            // NB: getrandom::Error has no source; this is adequate display
+            panic!("could not retrieve random bytes for uuid: {}", err)
+        });
+
+        bytes
+    }
+
+    #[cfg(feature = "fast-rng")]
+    {
+        rand::random()
+    }
+}
+
+impl Yyid {
     /// Creates a new random YYID
     ///
     /// ### Example
@@ -62,13 +87,10 @@ impl<'a> Yyid {
     ///
     /// let yyid = Yyid::new();
     /// println!("{}", yyid);
-    /// // => "02e7f0f6-067e-8c92-b25c-12c9180540a9"
+    /// // => "c49b79f5-22d4-dc42-f214-f4209c80d048"
     /// ```
     pub fn new() -> Self {
-        let mut bytes = [0u8; 16];
-        // TODO: in a next version this should be bubbled up
-        getrandom(&mut bytes).expect("getrandom could not safely generate random data");
-        Yyid(bytes)
+        Yyid(bytes())
     }
 
     /// Special case: a "nil" YYID
@@ -85,12 +107,13 @@ impl<'a> Yyid {
     /// assert_eq!(nil.as_bytes(), &[0u8; 16]);
     /// ```
     pub const fn nil() -> Self {
-        Yyid([0u8; 16])
+        Yyid(ZEROES)
     }
 
     /// Tests if the YYID is nil.
     pub fn is_nil(&self) -> bool {
-        self.as_bytes().iter().all(|&b| b == 0)
+        // self.as_bytes().iter().all(|&b| b == 0)
+        self.0 == ZEROES
     }
 
     /// Return an array of 16 octets containing the YYID data
@@ -101,43 +124,23 @@ impl<'a> Yyid {
     /// Returns a 128bit value containing the YYID data.
     // TODO: Add example once a parse_str or From is implemented
     pub fn to_u128(&self) -> u128 {
-        u128::from(self.as_bytes()[0]) << 120
-            | u128::from(self.as_bytes()[1]) << 112
-            | u128::from(self.as_bytes()[2]) << 104
-            | u128::from(self.as_bytes()[3]) << 96
-            | u128::from(self.as_bytes()[4]) << 88
-            | u128::from(self.as_bytes()[5]) << 80
-            | u128::from(self.as_bytes()[6]) << 72
-            | u128::from(self.as_bytes()[7]) << 64
-            | u128::from(self.as_bytes()[8]) << 56
-            | u128::from(self.as_bytes()[9]) << 48
-            | u128::from(self.as_bytes()[10]) << 40
-            | u128::from(self.as_bytes()[11]) << 32
-            | u128::from(self.as_bytes()[12]) << 24
-            | u128::from(self.as_bytes()[13]) << 16
-            | u128::from(self.as_bytes()[14]) << 8
-            | u128::from(self.as_bytes()[15])
+        u128::from_be_bytes(self.0)
+    }
+
+    /// Returns a 128bit value containing the YYID data.
+    pub fn as_u128(&self) -> u128 {
+        self.to_u128()
     }
 
     /// Returns a 128bit little-endian value containing the YYID data.
     // TODO: Add example once a parse_str or From is implemented
     pub fn to_u128_le(&self) -> u128 {
-        u128::from(self.as_bytes()[0])
-            | u128::from(self.as_bytes()[1]) << 8
-            | u128::from(self.as_bytes()[2]) << 16
-            | u128::from(self.as_bytes()[3]) << 24
-            | u128::from(self.as_bytes()[4]) << 32
-            | u128::from(self.as_bytes()[5]) << 40
-            | u128::from(self.as_bytes()[6]) << 48
-            | u128::from(self.as_bytes()[7]) << 56
-            | u128::from(self.as_bytes()[8]) << 64
-            | u128::from(self.as_bytes()[9]) << 72
-            | u128::from(self.as_bytes()[10]) << 80
-            | u128::from(self.as_bytes()[11]) << 88
-            | u128::from(self.as_bytes()[12]) << 96
-            | u128::from(self.as_bytes()[13]) << 104
-            | u128::from(self.as_bytes()[14]) << 112
-            | u128::from(self.as_bytes()[15]) << 120
+        u128::from_le_bytes(self.0)
+    }
+
+    /// Returns a 128bit little-endian value containing the YYID data.
+    pub fn as_u128_le(&self) -> u128 {
+        self.to_u128_le()
     }
 }
 
@@ -151,19 +154,19 @@ impl Default for Yyid {
 impl fmt::Debug for Yyid {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+        fmt::LowerHex::fmt(&self.as_hyphenated(), f)
     }
 }
 
 impl fmt::Display for Yyid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+        fmt::LowerHex::fmt(&self.as_hyphenated(), f)
     }
 }
 
 impl fmt::LowerHex for Yyid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+        fmt::LowerHex::fmt(&self.as_hyphenated(), f)
     }
 }
 
@@ -173,43 +176,54 @@ mod tests {
         std::string::{String, ToString},
         *,
     };
+    use pretty_assertions::{assert_eq, assert_ne};
 
     #[test]
     fn test_new() {
         let yyid = Yyid::new();
         let ystr = yyid.to_string();
 
-        assert!(ystr.len() == 36);
-        assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
+        assert_eq!(ystr.len(), 36);
+        assert!(ystr.chars().all(|c| c.is_ascii_hexdigit() || c == '-'));
     }
 
     #[test]
     fn test_to_hyphenated_string() {
         let yyid = Yyid::new();
-        let ystr = yyid.to_hyphenated_ref().to_string();
+        let ystr = yyid.as_hyphenated().to_string();
 
-        assert!(ystr.len() == 36);
-        assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
+        assert_eq!(ystr.len(), 36);
+        assert!(ystr.chars().all(|c| c.is_ascii_hexdigit() || c == '-'));
     }
 
     #[test]
     fn test_to_simple_string() {
         let yyid = Yyid::new();
-        let ystr = yyid.to_simple_ref().to_string();
+        let ystr = yyid.as_simple().to_string();
 
-        assert!(ystr.len() == 32);
-        assert!(ystr.chars().all(|c| c.is_digit(16)));
+        assert_eq!(ystr.len(), 32);
+        assert!(ystr.chars().all(|c| c.is_ascii_hexdigit()));
     }
 
     #[test]
     fn test_to_urn_string() {
         let yyid = Yyid::new();
-        let yurn = yyid.to_urn_ref().to_string();
-        let ystr = &yurn[9..];
+        let yurn = yyid.as_urn().to_string();
 
         assert!(yurn.starts_with("urn:yyid:"));
-        assert!(ystr.len() == 36);
-        assert!(ystr.chars().all(|c| c.is_digit(16) || c == '-'));
+        assert_eq!(yurn.len(), 45);
+        assert!(yurn[9..].chars().all(|c| c.is_ascii_hexdigit() || c == '-'));
+    }
+
+    #[test]
+    fn test_to_braced_string() {
+        let yyid = Yyid::new();
+        let ybraced = yyid.as_braced().to_string();
+
+        assert!(ybraced.starts_with("{"));
+        assert!(ybraced.ends_with("}"));
+        assert_eq!(ybraced.len(), 38);
+        assert!(ybraced[1..36].chars().all(|c| c.is_ascii_hexdigit() || c == '-'));
     }
 
     #[test]
@@ -217,11 +231,11 @@ mod tests {
         let yyid = Yyid::new();
 
         let yhyphen = yyid.to_string();
-        let ysimple = yyid.to_simple_ref().to_string();
+        let ysimple = yyid.as_simple().to_string();
 
         let ysimplified = yhyphen.chars().filter(|&c| c != '-').collect::<String>();
 
-        assert!(ysimplified == ysimple);
+        assert_eq!(ysimplified, ysimple);
     }
 
     #[test]
@@ -229,10 +243,11 @@ mod tests {
         let yyid1 = Yyid::new();
         let yyid2 = Yyid::new();
 
-        assert!(yyid1 == yyid1);
-        assert!(yyid2 == yyid2);
-        assert!(yyid1 != yyid2);
-        assert!(yyid2 != yyid1);
+        assert_eq!(yyid1, yyid1);
+        assert_eq!(yyid2, yyid2);
+
+        assert_ne!(yyid1, yyid2);
+        assert_ne!(yyid2, yyid1);
     }
 
     #[test]
@@ -240,7 +255,7 @@ mod tests {
         let yyid = Yyid::new();
         let ybytes = yyid.as_bytes();
 
-        assert!(ybytes.len() == 16);
+        assert_eq!(ybytes.len(), 16);
         assert!(!ybytes.iter().all(|&b| b == 0));
     }
 
@@ -250,14 +265,14 @@ mod tests {
         let yyid2 = yyid1;
         let yyid3 = Yyid::new();
 
-        assert!(yyid1 == yyid1);
-        assert!(yyid1 == yyid2);
-        assert!(yyid2 == yyid1);
+        assert_eq!(yyid1, yyid1);
+        assert_eq!(yyid1, yyid2);
+        assert_eq!(yyid2, yyid1);
 
-        assert!(yyid1 != yyid3);
-        assert!(yyid3 != yyid1);
-        assert!(yyid2 != yyid3);
-        assert!(yyid3 != yyid2);
+        assert_ne!(yyid1, yyid3);
+        assert_ne!(yyid3, yyid1);
+        assert_ne!(yyid2, yyid3);
+        assert_ne!(yyid3, yyid2);
     }
 
     #[test]
