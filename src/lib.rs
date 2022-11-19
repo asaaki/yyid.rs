@@ -173,6 +173,12 @@ impl fmt::LowerHex for Yyid {
     }
 }
 
+impl fmt::UpperHex for Yyid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::UpperHex::fmt(&self.as_hyphenated(), f)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{

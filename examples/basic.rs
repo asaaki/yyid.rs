@@ -1,21 +1,33 @@
 use yyid::*;
 
 fn main() {
-    println!("Using the Yyid::nil()");
     let yyid = Yyid::nil();
-    println!("[Display][Hyphen] {}", yyid);
-    println!("[Display][Simple] {}", yyid.as_simple());
-    println!("[Display][URN]    {}", yyid.as_urn());
-    println!("[Debug][Hyphen]   {:?}", yyid);
-    println!("[Debug]Simple]    {:?}", yyid.as_simple());
-    println!("[Debug][URN]      {:?}", yyid.as_urn());
+    println!("\nUsing the Yyid::nil()");
+    println!("[Display] [yyid:X]   {yyid:X}");
+    println!("[Display] [Hyphen]   {}", yyid.as_hyphenated());
+    println!("[Display] [Simple]   {}", yyid.as_simple());
+    println!("[Display] [URN]      {}", yyid.as_urn());
+    println!("[Display] [Braced]   {}", yyid.as_braced());
+    println!("---------------------------------------------------------------------");
+    println!("[Debug]   [yyid:?]   {yyid:?}");
+    println!("[Debug]   [Hyphen]   {:?}", yyid.as_hyphenated());
+    println!("[Debug]   [Simple]   {:?}", yyid.as_simple());
+    println!("[Debug]   [URN]      {:?}", yyid.as_urn());
+    println!("[Debug]   [Braced]   {:?}", yyid.as_braced());
 
-    println!("Using the Yyid::new()");
+    println!("\n=====================================================================");
+
     let yyid = Yyid::new();
-    println!("[Display][Hyphen] {}", yyid);
-    println!("[Display][Simple] {}", yyid.as_simple());
-    println!("[Display][URN]    {}", yyid.as_urn());
-    println!("[Debug][Hyphen]   {:?}", yyid);
-    println!("[Debug]Simple]    {:?}", yyid.as_simple());
-    println!("[Debug][URN]      {:?}", yyid.as_urn());
+    println!("\nUsing the Yyid::new()");
+    println!("[Display] [yyid:X]   {yyid:X}");
+    println!("[Display] [Hyphen]   {}", yyid.as_hyphenated());
+    println!("[Display] [Simple]   {}", yyid.as_simple());
+    println!("[Display] [URN]      {}", yyid.as_urn());
+    println!("[Display] [Braced]   {}", yyid.as_braced());
+    println!("---------------------------------------------------------------------");
+    println!("[Debug]   [yyid:?]   {yyid:?}");
+    println!("[Debug]   [Hyphen]   {:?}", yyid.as_hyphenated());
+    println!("[Debug]   [Simple]   {:?}", yyid.as_simple());
+    println!("[Debug]   [URN]      {:?}", yyid.as_urn());
+    println!("[Debug]   [Braced]   {:?}", yyid.as_braced());
 }
