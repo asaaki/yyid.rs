@@ -116,31 +116,34 @@ impl Yyid {
         self.0 == ZEROES
     }
 
-    /// Return an array of 16 octets containing the YYID data
+    /// Return an owned array of 16 octets containing the YYID data
+    pub fn bytes(self) -> Bytes {
+        self.0
+    }
+
+    /// Return a borrowed array of 16 octets containing the YYID data
     pub fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
-    /// Returns a 128bit value containing the YYID data.
-    // TODO: Add example once a parse_str or From is implemented
-    pub fn to_u128(&self) -> u128 {
+    /// Consume itself and return a 128bit value containing the YYID data.
+    pub fn to_u128(self) -> u128 {
         u128::from_be_bytes(self.0)
     }
 
-    /// Returns a 128bit value containing the YYID data.
+    /// Return a 128bit value containing the YYID data.
     pub fn as_u128(&self) -> u128 {
-        self.to_u128()
+        u128::from_be_bytes(self.0)
     }
 
-    /// Returns a 128bit little-endian value containing the YYID data.
-    // TODO: Add example once a parse_str or From is implemented
-    pub fn to_u128_le(&self) -> u128 {
+    ///  Consume itself and return a 128bit little-endian value containing the YYID data.
+    pub fn to_u128_le(self) -> u128 {
         u128::from_le_bytes(self.0)
     }
 
-    /// Returns a 128bit little-endian value containing the YYID data.
+    /// Return a 128bit little-endian value containing the YYID data.
     pub fn as_u128_le(&self) -> u128 {
-        self.to_u128_le()
+        u128::from_le_bytes(self.0)
     }
 }
 
