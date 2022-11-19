@@ -1,17 +1,17 @@
 ci:
-	cargo build
+	cargo build --all-features
 	cargo fmt -- --check --verbose
-	cargo clippy
-	cargo test --verbose
-	cargo run --example basic
+	cargo clippy --all-features
+	cargo test --all-features --verbose
+	cargo run --all-features --example basic
 	@echo "Done."
 
 local:
-	cargo build --verbose
+	cargo build --all-features --verbose
 	cargo fmt -- --verbose
-	cargo clippy
-	cargo test --verbose
-	cargo run --example basic
+	cargo clippy --all-features
+	cargo test --all-features --verbose
+	cargo run --all-features --example basic
 
 print-version:
 	cargo run --example version
@@ -19,6 +19,9 @@ print-version:
 release-tag:
 	$(shell cargo run --example release-tag)
 	git push --tags
+
+docs:
+	cargo doc --all-features --open
 
 publish:
 	cargo publish
