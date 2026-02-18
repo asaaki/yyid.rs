@@ -64,7 +64,7 @@ fn bytes() -> Bytes {
     {
         let mut bytes = ZEROES;
 
-        getrandom::getrandom(&mut bytes).unwrap_or_else(|err| {
+        getrandom::fill(&mut bytes).unwrap_or_else(|err| {
             // NB: getrandom::Error has no source; this is adequate display
             panic!("could not retrieve random bytes for uuid: {}", err)
         });
